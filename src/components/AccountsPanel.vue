@@ -1,77 +1,31 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import Input from './ui/Input.vue'
+import { useAccountsStore } from '@/stores/accounts'
+import { storeToRefs } from 'pinia'
 import PlusButton from './ui/PlusButton.vue'
-import Select from './ui/Select.vue'
-import IconTrash from './icons/IconTrash.vue'
-import IconEye from './icons/IconEye.vue'
-import IconEyeOff from './icons/IconEyeOff.vue'
-import IconClose from './icons/IconClose.vue'
-import type Tag from '@/types/Tag'
-import type Account from '@/types/Account'
 import Help from './ui/Help.vue'
+import Select from './ui/Select.vue'
+import Input from './ui/Input.vue'
+import IconEyeOff from './icons/IconEyeOff.vue'
+import IconEye from './icons/IconEye.vue'
+import IconClose from './icons/IconClose.vue'
+import IconTrash from './icons/IconTrash.vue'
+
+const store = useAccountsStore()
+const { accounts, passwordVisible, currentTagInput } = storeToRefs(store)
+const {
+  addAccount,
+  removeAccount,
+  updateType,
+  togglePasswordVisibility,
+  addTag,
+  removeTag,
+  handleTagKeydown,
+} = store
 
 const typeOptions = [
   { value: 'local', label: 'Локальная' },
   { value: 'ldap', label: 'LDAP' },
 ]
-
-const accounts = ref<Account[]>([])
-
-const currentTagInput = reactive<{ [key: number]: string }>({})
-
-function updateType(id: number, newType: string) {
-  const acc = accounts.value.find((a) => a.id === id)
-  if (acc) acc.type = newType
-}
-
-function addAccount() {
-  const newId = accounts.value.length ? Math.max(...accounts.value.map((a) => a.id)) + 1 : 1
-  accounts.value.push({
-    id: newId,
-    name: '',
-    type: '',
-    password: '',
-    tags: [],
-  })
-  currentTagInput[newId] = ''
-}
-
-function removeAccount(id: number) {
-  accounts.value = accounts.value.filter((a) => a.id !== id)
-  delete currentTagInput[id]
-}
-
-const passwordVisible = reactive<{ [key: number]: boolean }>({})
-
-function togglePasswordVisibility(id: number) {
-  passwordVisible[id] = !passwordVisible[id]
-}
-
-function addTag(id: number) {
-  const value = currentTagInput[id]?.trim()
-  if (value) {
-    const acc = accounts.value.find((a) => a.id === id)
-    if (acc && !acc.tags.some((tag) => tag.value === value)) {
-      acc.tags.push({ value })
-      currentTagInput[id] = ''
-    }
-  }
-}
-
-function removeTag(id: number, tagIndex: number) {
-  const acc = accounts.value.find((a) => a.id === id)
-  if (acc) {
-    acc.tags.splice(tagIndex, 1)
-  }
-}
-
-function handleTagKeydown(event: KeyboardEvent, id: number) {
-  if (['Enter', ';', ','].includes(event.key)) {
-    event.preventDefault()
-    addTag(id)
-  }
-}
 </script>
 
 <template>
